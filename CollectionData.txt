@@ -1,0 +1,39 @@
+{
+"info":{
+
+"NSFW":"False",
+"extractAudio":"True",
+"extractImage":"True"
+
+},
+
+"collection":{
+
+"name":"Test AudioNFTs",
+"description":"images with an mp3",
+"icon":"mycoolicon.com",
+"banner":"myawesomebanner.com",
+"twitter":"@twatter",
+"discord":"",
+"youtube":"youtubelink",
+"soundcloud":"N/A"
+},
+
+"audio":{
+"number_of_audio_files": "2"
+
+},
+
+"image":{
+"image artist":"CatskillNFT"
+},
+
+"minting":{
+"ipfs address":"https://askdjfouwhe.ipfs/",
+"chia directory":"C://Users/XXX/AppData/Local/Programs/Chia/resources/app.asar.unpacked/daemon"
+}
+
+
+
+
+}
