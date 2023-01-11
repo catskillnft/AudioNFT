@@ -1,36 +1,49 @@
 {
-"info":{
 
+
+"collection":{
 "NSFW":"False",
-"extractAudio":"True",
-"extractImage":"True"
+"series_total":9,
+
+"extract_audio":"True",
+"extract_image":"True",
+
+"name":"Test AudioNFTs v2",
+"description":"images with mp3s",
+
+"icon":"mycoolicon.com",
+"banner":"myawesomebanner.com"
 
 },
 
-"collection":{
+"socials":{
 
-"name":"Test AudioNFTs",
-"description":"images with an mp3",
-"icon":"mycoolicon.com",
-"banner":"myawesomebanner.com",
 "twitter":"@twatter",
 "discord":"",
 "youtube":"youtubelink",
 "soundcloud":"N/A"
 },
 
+
 "audio":{
-"number_of_audio_files": "2"
+
+"track_numbers_labeled": "True",
+"audio_collection_name": "AudioNFT Test Synth Songs",
+"sample_playback_length": 30
 
 },
+
 
 "image":{
-"image artist":"CatskillNFT"
+"image_artist":"CatskillNFT",
+"image_collection_name":"Landscapes for Testing",
+"use_file_description":"False"
 },
 
+
 "minting":{
-"ipfs address":"https://askdjfouwhe.ipfs/",
-"chia directory":"C://Users/XXX/AppData/Local/Programs/Chia/resources/app.asar.unpacked/daemon"
+"ipfs_address":"https://askdjfouwhe.ipfs/",
+"chia_directory":"C://Users/XXX/AppData/Local/Programs/Chia/resources/app.asar.unpacked/daemon"
 }
 
 
