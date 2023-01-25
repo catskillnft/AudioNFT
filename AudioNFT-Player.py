@@ -1,3 +1,7 @@
+##This script requires ffmpeg to be installed on your system
+##if encountering errors download ffmpeg for your OS and place files into the main directory.
+
+
 import binascii
 import os
 import json
