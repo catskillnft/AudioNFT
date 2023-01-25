@@ -9,8 +9,7 @@ import csv
 import uuid
 import sys
 import mutagen
-#import eyed3
-#import ffmpeg
+
 
 
 def getImageFiles(folderInfo):
@@ -120,9 +119,9 @@ def createAudioNFTHexString(collectionData,imageInfo,audioTrackInfo):
     #each audio track will have it's own info stored in a dict json string
     #Dict:keys- track_number #:original_fileNname, artist, title, id3_size, file_size, length
 
-    #AudioNFTHexString: hexIDString, version,{AudioNFT:{AudioNFT_info: extract_image, extract_audio}{image_info:{size,file,name,description}{audio_info:{number_of_tracks, sample_playback_length, track_number #,...}}}
+    #AudioNFTHexString: hexIDString, version,{AudioNFT:{info: extract_image, extract_audio}{image_info:{size,file,name,description}{audio_info:{number_of_tracks, sample_playback_length, track_number #,...}}}
     
-    #returns list with : AudioNFT Hex String in plain text, AudioNFTHexString encoded into hex, and hexIDString encoded into hex.
+    #returns list with : [0]AudioNFT Hex String in plain text, [1]AudioNFTHexString encoded into hex, and [2]hexIDString encoded into hex.
     hexIDString = 'ChiaAudioNFTProtocol@*-*@'
     version = '0.0.2@*-*@'
     returnData = []
@@ -139,13 +138,13 @@ def createAudioNFTHexString(collectionData,imageInfo,audioTrackInfo):
 
     
  
-    imageInfoTempDict.update({"size": imageInfo["size"]})
-    imageInfoTempDict.update({"file": imageInfo['file']})
+    imageInfoTempDict.update({"file_size": imageInfo["size"]})
+    imageInfoTempDict.update({"file_name": imageInfo['file']})
     imageInfoTempDict.update({"name": imageInfo['name']})
     imageInfoTempDict.update({"description": imageInfo['description']})
 
     
-    allInfoDict.update({"AudioNFT_info": audioNFTInfo})
+    allInfoDict.update({"info": audioNFTInfo})
     allInfoDict.update({"image_info": imageInfoTempDict})
     allInfoDict.update({"audio_info": audioTrackInfo})
     audioNFTHexDict.update({"AudioNFT": allInfoDict})
@@ -200,8 +199,8 @@ def createMetadataFile(folderInfo,collectionData, fileInfo, uuidNumber, audioNFT
     for item in collectionData['socials']:
         thisItem = {'type':item, 'value':collectionData['socials'][item]}
         collectionAttributes.append(thisItem)
-    
-    newMetadataFile.update({'collection':collectionAttributes})
+    collectionMetadata.update({'attributes':collectionAttributes})
+    newMetadataFile.update({'collection':collectionMetadata})
     
     imageAttributes = []
 
@@ -220,7 +219,7 @@ def createMetadataFile(folderInfo,collectionData, fileInfo, uuidNumber, audioNFT
     
     newMetadataFile = json.dumps(newMetadataFile, indent =4)
     
-    metaFileName = audioNFTHexString[2] + " " + str(seriesNumber) + '.json'
+    metaFileName = audioNFTHexString[2] + " " + "#" + str(seriesNumber) + '.json'
     metaFileName = os.path.join(outputDir,metaFileName)
     #open(metaFileName, 'x',  encoding='utf-8')
     with open(metaFileName, 'w',encoding='utf-8') as f:
@@ -238,7 +237,7 @@ def createAudioNFTCSVFile(folderInfo,imageCSVMetadataInfo,audioNFTHexString,coll
 
     audioNFTHexStringInfo = audioNFTHexString[0].split("@*-*@")
     audioNFTHexStringInfo = json.loads(audioNFTHexStringInfo[2])
-    audioNFTHexInfo = audioNFTHexStringInfo["AudioNFT"]["AudioNFT_info"]
+    audioNFTHexInfo = audioNFTHexStringInfo["AudioNFT"]["info"]
     imageHexInfo = audioNFTHexStringInfo["AudioNFT"]["image_info"]
     audioHexInfo= audioNFTHexStringInfo["AudioNFT"]["audio_info"]
     imageTraits = imageCSVMetadataInfo[1]
@@ -303,11 +302,11 @@ def addRowToAudioNFTCSVFile(folderInfo,imageCSVMetadataInfo,audioNFTHexString,co
     
     audioNFTHexStringInfo = audioNFTHexString[0].split("@*-*@")
     audioNFTHexStringInfo = json.loads(audioNFTHexStringInfo[2])
-    audioNFTHexInfo = audioNFTHexStringInfo["AudioNFT"]["AudioNFT_info"]
+    audioNFTHexInfo = audioNFTHexStringInfo["AudioNFT"]["info"]
     imageHexInfo = audioNFTHexStringInfo["AudioNFT"]["image_info"]
     audioHexInfo= audioNFTHexStringInfo["AudioNFT"]["audio_info"]
     imageTraits = imageCSVMetadataInfo[1]
-    originalImageName = imageHexInfo["file"]
+    originalImageName = imageHexInfo["file_name"]
     rowGenericInfo.append(str(newFileName))
     rowGenericInfo.append(str(collectionData["collection"]["name"]) + " #" + str(fileNumber))
     if collectionData["image"]["use_file_description"] != "True":
@@ -348,15 +347,6 @@ def addRowToAudioNFTCSVFile(folderInfo,imageCSVMetadataInfo,audioNFTHexString,co
     
     return returnData
     
-def createPlaylistFile(audioFiles):
-    #creates a playlist file that contains information on all Audio file(s) in the AudioNFT
-    audioFileInfo = {}
-    #for each audio file, getID3Info()
-    #construct playlist with ID3 data
-    #create playlist for all files, and return ID3 data for each audio file
-    #will need ID3 tag length in bytes, and for each audio will need total song length in seconds. 
-    returnData = "placeholder for playlist file info"
-    return returnData
 
 
 def getFolders():
@@ -364,7 +354,7 @@ def getFolders():
     allItems = os.listdir(workingDir)
     imageDir = 'SourceImage'
     audioDir = 'SourceAudio'
-    outputDir = 'AudioNFT'
+    outputDir = 'AudioNFT-Files'
     for item in allItems:
         if os.path.isdir(item):
             if imageDir in item:
@@ -379,6 +369,9 @@ def getFolders():
     #returnData[2] = audioDir
     #returnData[3] = outputDir
     returnData = [workingDir,imageDir, audioDir, outputDir]
+    for item in returnData:
+        if not os.path.exists(item):
+            os.mkdir(item)
     return returnData
 
 def getAudioTrackInfo(audioDir,audioFiles,collectionData):
@@ -393,8 +386,9 @@ def getAudioTrackInfo(audioDir,audioFiles,collectionData):
     totalNumberOfTracks = len(audioFiles)
     returnData.update({"number_of_tracks": totalNumberOfTracks})
     returnData.update({"sample_playback_length": playbackLength})
-    
+    trackOrder = 1
     trackNumber = 1
+    trackOffset = 0
     for track in audioFiles:
         thisTrackInfo = {}
         
@@ -453,12 +447,17 @@ def getAudioTrackInfo(audioDir,audioFiles,collectionData):
         trackLength = currentAudioFile.info.length
         thisTrackInfo.update({"file_size": totalFileSize})
         thisTrackInfo.update({"length": trackLength})
+        thisTrackInfo.update({'track_order':trackOrder})
+        thisTrackInfo.update({'track_offset':trackOffset})
 
         #thisTrackInfoTrack.update({"info":thisTrackInfo})
 
         returnData.update({trackNumberField: thisTrackInfo})
         
         trackNumber = trackNumber + 1
+        trackOrder = trackOrder + 1
+        trackOffset = trackOffset + int(totalFileSize)
+
 
     return returnData
 
@@ -487,7 +486,7 @@ def getImageInfo(imageFile, imageDir, imageCSVMetadataInfo):
     
     return returnData
 
-def fileCreator(audioNFTHexString,imageFile, audioFiles, collectionData,folderInfo,fileNumber):
+def fileCreator(audioNFTHexString,imageFile, audioFiles, collectionData,folderInfo,fileNumber,audioTrackInfo):
     #creates a new AudioNFT file. 
     #returns the name of the new file.
     workingDir = folderInfo[0]
@@ -495,24 +494,36 @@ def fileCreator(audioNFTHexString,imageFile, audioFiles, collectionData,folderIn
     audioDir = folderInfo[2]
     outputDir = folderInfo[3]
     fileNumber = str(fileNumber)
+    audioTrackList = []
     
     imageFileName = str(imageFile).split(".")
     audioCollectionName = collectionData["audio"]["audio_collection_name"]
-    newFileName = str(fileNumber + audioCollectionName + "." + imageFileName[1])
+    newFileName = str(fileNumber + '-' + audioCollectionName + "." + imageFileName[1])
     newFileName = newFileName.replace(" ", "")
     newFile = os.path.join(outputDir, newFileName)
     imageFile = os.path.join(imageDir, imageFile)
-    audioNFTHexString = audioNFTHexString[1].encode()
+    audioNFTHexStringEncoded = audioNFTHexString[1].encode()
+    
+    for item in audioTrackInfo:
+        if 'track_number' in item:
+            audioTrackList.append(item)
     
     open(newFile, 'x')
     with open(newFile, 'ab') as nf, open(imageFile, 'rb') as imgf:
         nf.write(imgf.read())
-        nf.write(audioNFTHexString)
+        nf.write(audioNFTHexStringEncoded)
+    audioOffset = 0
+    trackOrder = 1
+    while trackOrder <= len(audioTrackList):
+        for item in audioTrackList:
+            if trackOrder == int(audioTrackInfo[item]['track_order']):
 
-    for audioFile in audioFiles:
-        audioFile = os.path.join(audioDir,audioFile)
-        with open(newFile, 'ab') as nf, open(audioFile, 'rb') as af:
-            nf.write(af.read())
+                audioFile = os.path.join(audioDir,audioTrackInfo[item]['original_filename'])
+
+                with open(newFile, 'ab') as nf, open(audioFile, 'rb') as af:
+                    nf.write(af.read())
+        trackOrder = trackOrder + 1
+        
 
     print('AudioNFT File Created')
 
@@ -539,12 +550,12 @@ def createAudioNFTFiles():
 
             imageInfo = getImageInfo(imageFile,imageDir,imageCSVMetadataInfo)
             audioNFTHexString = createAudioNFTHexString(collectionData,imageInfo,audioTrackInfo)
-            newFileName = fileCreator(audioNFTHexString, imageFile, audioFiles, collectionData, folderInfo,fileNumber)
+            newFileName = fileCreator(audioNFTHexString, imageFile, audioFiles, collectionData, folderInfo,fileNumber,audioTrackInfo)
 
             newFileInfo = addRowToAudioNFTCSVFile(folderInfo,imageCSVMetadataInfo,audioNFTHexString,collectionData,newFileName, fileNumber)
             success = createMetadataFile(folderInfo,collectionData,newFileInfo,uuidNumber,audioNFTHexString)
             fileNumber = fileNumber + 1
-   
+            
     return
 
 def menu():
